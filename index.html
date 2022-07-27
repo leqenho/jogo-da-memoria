@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo da memoria tunado</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      background-color: #171717;
+    }
+
+    img {
+      max-width: 90%;
+    }
+
+    .Boardgame {
+      margin: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      justify-content: center;
+      perspective: 1000px;
+    }
+
+    .Card {
+      width: min(calc(50vw - 10px), calc(25vh - 10px));
+      height: min(calc(50vw - 10px), calc(25vh - 10px));
+      margin: 5px;
+      position: relative;
+      transform: scale(1);
+      transform-style: preserve-3d;
+      transition: transform .5s;
+      border-radius: 4px;
+    }
+
+    .Card:active {
+      transform: scale(0.97);
+      transition: transform .2s;
+    }
+
+    .Card.flip {
+      transform: rotateY(180deg);
+    }
+
+    .Card_front-face,
+    .Card_back-face {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      border-radius: 5px;
+      backface-visibility: hidden;
+      pointer-events: none;
+    }
+
+    .Card_back-face {
+      border: 0.5rem solid white;
+      background-image: linear-gradient(287deg, rgba(232, 87, 237, 0.15) 0%, rgba(109, 137, 69, 0.15) 100%), linear-gradient(217deg, rgb(33, 138, 184), rgb(0, 241, 181));
+    }
+
+    .Card_front-face {
+      display: grid;
+      place-items: center;
+      transform: rotateY(180deg);
+      background-color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="Boardgame"></section>
+
+  <script>
+    var flippedCards = 0;
+    var currentMatch = -1;
+    let allCards = Array
+      .from({ length: 50 })
+      .map((_, index) => (
+        `<div class="Card">
+          <div class="Card_front-face">
+            <img src="./image/${index + 1}.png" />
+          </div>
+          <div class="Card_back-face"></div>
+        </div>`
+      ))
+      .sort(() => 0.5 - Math.random());
+    let boardgame = Array.from({ length: 4 }).map((_, index) => {
+      return {
+        cardHtml: allCards[index],
+        cardMatch: index,
+      }
+    });
+
+    function flipCard({ classList: card }, index, matchIndex) {
+      card.toggle('flip');
+      flippedCards += 1;
+
+      if (flippedCards == 2) {
+        if (matchIndex == currentMatch) {
+          currentMatch = -1;
+          flippedCards = 0;
+          return;
+        } else {
+          // flippedCards.forEach(() => card.remove('flip'));
+          setTimeout(() => {
+            document
+              .querySelectorAll('.flip')
+              .forEach(flip => flip.classList.remove('flip'));
+          }, 1000);
+          currentMatch = -1;
+          flippedCards = 0;
+          return;
+        }
+      };
+
+      currentMatch = matchIndex;
+    }
+
+    (() => {
+      let board = boardgame
+        .concat(boardgame)
+        .sort(() => 0.5 - Math.random())
+        .map(({ cardHtml, cardMatch }) => {
+          document.querySelector('.Boardgame').innerHTML += cardHtml;
+          return { cardHtml, cardMatch };
+        });
+
+      let cards = document.querySelectorAll('.Card').forEach((card, index) => {
+        card.addEventListener('click', () => {
+          let matchIndex = board[index].cardMatch;
+          flipCard(card, index, matchIndex);
+        });
+      });
+    })();
+
+
+
+  </script>
+</body>
+
+</html>
